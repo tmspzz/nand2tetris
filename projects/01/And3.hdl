@@ -1,0 +1,14 @@
+/**
+ * 3-bit bitwise And:
+ * out = a AND b AND C
+ */
+
+CHIP And3 {
+
+    IN a, b, c;
+    OUT out;
+
+    PARTS:
+    And(a=a, b=b, out=tmp);
+    And(a=tmp, b=c, out=out);
+}

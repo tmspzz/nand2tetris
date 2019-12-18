@@ -1,0 +1,53 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/01/DMux4Way.hdl
+
+/**
+ * 4-way demultiplexor:
+ * {a, b, c, d} = {in, 0, 0, 0} if sel == 00
+ *                {0, in, 0, 0} if sel == 01
+ *                {0, 0, in, 0} if sel == 10
+ *                {0, 0, 0, in} if sel == 11
+ */
+
+CHIP DMux4Way {
+    IN in, sel[2];
+    OUT a, b, c, d;
+
+    PARTS:
+
+    // Also valid implementation based on truth table
+    
+    // Not(in=sel[0], out=NOTlsb);
+    // Not(in=sel[1], out=NOTmsb);
+    // And3(a=NOTlsb, b=NOTmsb, c=in, out=aCTL);
+    // Mux(a=false, b=in, sel=aCTL, out=a);
+    // And3(a=sel[0], b=NOTmsb, c=in, out=bCTL);
+    // Mux(a=false, b=in, sel=bCTL, out=b);
+    // And3(a=NOTlsb, b=sel[1], c=in, out=cCTL);
+    // Mux(a=false, b=in, sel=cCTL, out=c);
+    // And3(a=sel[0], b=sel[1], c=in, out=dCTL);
+    // Mux(a=false, b=in, sel=dCTL, out=d);
+
+    DMux(in=in, sel=sel[0], a=lsb0, b=lsb1);
+    DMux(in=in, sel=sel[1], a=msb0, b=msb1);
+    And(a=lsb0, b=msb0, out=a);
+    And(a=lsb1, b=msb0, out=b);
+    And(a=lsb0, b=msb1, out=c);
+    And(a=lsb1, b=msb1, out=d);
+}
+
+
+// S1 S2 IN  O
+// 0 0   1   1       NOT S1 and NOT S2 AND in
+// 0 0   0   0
+
+// 1 0   1   1       S1 and NOT s2 and IN
+// 1 0   0   0
+
+// 0 1   1   1       not S1 and s2 and IN
+// 0 1   0   0
+
+// 1 1  1    1       
+// 1 1  0    0

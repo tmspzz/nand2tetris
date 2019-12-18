@@ -1,0 +1,38 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/01/Mux8Way16.hdl
+
+/**
+ * 8-way 16-bit multiplexor:
+ * out = a if sel == 000
+ *       b if sel == 001
+ *       etc.
+ *       h if sel == 111
+ */
+
+CHIP Mux8Way16 {
+    IN a[16], b[16], c[16], d[16],
+       e[16], f[16], g[16], h[16],
+       sel[3];
+    OUT out[16];
+
+    PARTS:
+    DMux8Way(in=true, sel=sel, a=isA, b=isB, c=isC, d=isD, e=isE, f=isF, g=isG, h=isH);
+    Mux16(a=false, b=a, sel=isA, out=passA);
+    Mux16(a=false, b=b, sel=isB, out=passB);
+    Mux16(a=false, b=c, sel=isC, out=passC);
+    Mux16(a=false, b=d, sel=isD, out=passD);
+    Mux16(a=false, b=e, sel=isE, out=passE);
+    Mux16(a=false, b=f, sel=isF, out=passF);
+    Mux16(a=false, b=g, sel=isG, out=passG);
+    Mux16(a=false, b=h, sel=isH, out=passH);
+
+    Or16(a=passA, b=passB, out=orAB);
+    Or16(a=orAB, b=passC, out=orABC);
+    Or16(a=orABC, b=passD, out=orABCD);
+    Or16(a=orABCD, b=passE, out=orABCDE);
+    Or16(a=orABCDE, b=passF, out=orABCDEF);
+    Or16(a=orABCDEF, b=passG, out=orABCDEFG);
+    Or16(a=orABCDEFG, b=passH, out=out);
+}
