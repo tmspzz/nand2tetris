@@ -1,0 +1,27 @@
+// And 16 inputs together
+
+
+CHIP And16Way {
+    IN  
+        in[16];
+
+    OUT 
+        out;
+
+    PARTS:
+    And(a=in[0], b=in[1], out=and01);
+    And(a=and01, b=in[2], out=and012);
+    And(a=and012, b=in[3], out=and0123);
+    And(a=and0123, b=in[4], out=and01234);
+    And(a=and01234, b=in[5], out=and012345);
+    And(a=and012345, b=in[6], out=and0123456);
+    And(a=and0123456, b=in[7], out=and01234567);
+    And(a=and01234567, b=in[8], out=and012345678);
+    And(a=and012345678, b=in[9], out=and0123456789);
+    And(a=and0123456789, b=in[10], out=and0123456789A);
+    And(a=and0123456789A, b=in[11], out=and0123456789AB);
+    And(a=and0123456789AB, b=in[12], out=and0123456789ABC);
+    And(a=and0123456789ABC, b=in[13], out=and0123456789ABCD);
+    And(a=and0123456789ABCD, b=in[14], out=and0123456789ABCDE);
+    And(a=and0123456789ABCDE, b=in[15], out=out);
+}
