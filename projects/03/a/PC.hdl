@@ -17,4 +17,23 @@ CHIP PC {
 
     PARTS:
     // Put your code here:
+
+    Or(a=reset, b=load, out=loadOrReset);
+    Or(a=loadOrReset, b=inc, out=loadOrResetOrInc);
+    Mux16(a=in, b=false, sel=reset, out=inAfterResetEval);
+    Inc16(in=registerOut, out=registerOutInc);
+    Not(in=loadOrReset, out=notLoadOrReset);
+    And(a=notLoadOrReset, b=inc, out=shouldInc);
+    // shouldInc truth table
+    // R L I O
+    // 0 0 0 0
+    // 0 0 1 1 (not R and not L) and I => not (R or L) and I
+    // 0 1 0 0
+    // 0 1 1 0
+    // 1 0 0 0
+    // 1 0 1 0
+    // 1 1 0 0
+    // 1 1 1 0
+    Mux16(a=inAfterResetEval, b=registerOutInc, sel=shouldInc, out=inFullEval);
+    Register(in=inFullEval, load=loadOrResetOrInc, out=registerOut, out=out);
 }

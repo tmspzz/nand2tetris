@@ -15,5 +15,20 @@ CHIP RAM64 {
     OUT out[16];
 
     PARTS:
-    // Put your code here:
+    // Check the higher part of the address to understand what register to select
+    DMux8Way(in=load, sel=address[3..5], a=msb000, b=msb001, c=msb010, d=msb011, e=msb100, f=msb101, g=msb110, h=msb111);
+
+    // Inside each register after proper register selection, only use the lower part of the address
+    // to select inside that register
+    RAM8(in=in, load=msb000, address=address[0..2], out=bank0Out);
+    RAM8(in=in, load=msb001, address=address[0..2], out=bank1Out);
+    RAM8(in=in, load=msb010, address=address[0..2], out=bank2Out);
+    RAM8(in=in, load=msb011, address=address[0..2], out=bank3Out);
+    RAM8(in=in, load=msb100, address=address[0..2], out=bank4Out);
+    RAM8(in=in, load=msb101, address=address[0..2], out=bank5Out);
+    RAM8(in=in, load=msb110, address=address[0..2], out=bank6Out);
+    RAM8(in=in, load=msb111, address=address[0..2], out=bank7Out);
+
+    // Select out with the same logic as in
+    Mux8Way16(a=bank0Out, b=bank1Out, c=bank2Out, d=bank3Out, e=bank4Out, f=bank5Out, g=bank6Out, h=bank7Out, sel=address[3..5], out=out);
 }
