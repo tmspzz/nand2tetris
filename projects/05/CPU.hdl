@@ -40,4 +40,66 @@ CHIP CPU {
 
     PARTS:
     // Put your code here:
+
+
+    /****** C instruction Decoding ******/
+    // Instruction  template: ixxaccccccdddjjj
+
+                       // ixxacccccc ddd jjj
+    DMux8Way(in=true, sel=instruction[3..5], a=destNull, b=destM, c=destD, d=destMD, e=destA, f=destAM, g=destAD, h=destAMD); // Destination Decoding
+    Or8Way(in[0]=destD, in[1]=destMD, in[2]=destAD, in[3]=destAMD, in[4..7]=false, out=destAffectsD); // Destination of C instructions is D register
+    Or8Way(in[0]=destA, in[1]=destAM, in[2]=destAD, in[3]=destAMD, in[4..7]=false, out=destAffectsA); // Destination of C instructions is A register
+    Or8Way(in[0]=destM, in[1]=destAM, in[2]=destMD, in[3]=destAM, in[4]=destAMD, in[5..7]=false, out=destAffectsMemory); // Destination of C instructions is Memory
+                      // ixxacccccc ddd jjj
+    DMux8Way(in=true, sel=instruction[0..2], a=noJMP, b=jmpGT, c=jmpEQ, d=jmpGE, e=jmpLT, f=jmpNE, g=jmpLE, h=justJMP); // Jump Decoding
+    And(a=instruction[15], b=destAffectsMemory, out=writeM);
+    /****** C instruction Decoding END ******/
+
+    /****** A instruction Decoding ******/
+    Not(in=instruction[15], out=isAInstruction);
+    Or(a=isAInstruction, b=destAffectsA, out=loadA);
+    /****** A instruction Decoding END ******/
+
+    /****** A Register Control ******/
+    Mux16(a=aluOutFeedback, b=instruction, sel=isAInstruction, out=inARegister);
+    Register(in=inARegister, load=loadA, out=outARegister, out=jmpAddressFromA, out[0..14]=addressM); // Register A
+    /****** A Register Control END ******/
+
+    /****** ALU Input ******/
+                              // ? ixx1ccccccdddjjj the single a-bit determines whether the ALU will operate on the A register input or on the M input
+    Mux16(a=outARegister, b=inM, sel=instruction[12], out=aluYIn);
+    And(a=instruction[15], b=destAffectsD, out=loadD);
+    DRegister(in=aluOutFeedback, load=loadD, out=aluXIn); // Register D
+    /****** ALU Input END ******/
+    
+    /****** ALU Control ******/
+
+                         // ixxa1cccccdddjjj   ixxac1ccccdddjjj   ixxacc1cccdddjjj   ixxaccc1ccdddjjj   ixxacccc1cdddjjj ixxaccccc1dddjjj
+    ALU(x=aluXIn, y=aluYIn, zx=instruction[11], nx=instruction[10], zy=instruction[9], ny=instruction[8], f=instruction[7], no=instruction[6], out=aluOutFeedback, out=outM, zr=isZero, ng=isNegative);
+    /****** ALU Control END ******/
+
+    /****** PC Control ******/
+    Not(in=isNegative, out=isPositive);
+    Or(a=isPositive, b=isZero, out=greatThanOrEqual);
+    Or(a=isNegative, b=isZero, out=lessThanOrEqual);
+    Not(in=isZero, out=notZero);
+    And(a=isPositive, b=notZero, out=isPositiveAndNotZero);
+    And(a=jmpGT, b=isPositiveAndNotZero, out=loadJPMGT);
+    And(a=jmpEQ, b=isZero, out=loadJPMEQ);
+    And(a=jmpGE, b=greatThanOrEqual, out=loadJMPGE);
+    And(a=jmpLT, b=isNegative, out=loadJMPLT);
+    And(a=jmpNE, b=notZero, out=loadJMPNE);
+    And(a=jmpLE, b=lessThanOrEqual, out=loadJMPLE);
+
+    Or8Way(in[0]=justJMP, in[1]=loadJPMGT, in[2]=loadJPMEQ, in[3]=loadJMPGE, in[4]=loadJMPLT, in[5]=loadJMPNE, in[6]=loadJMPLE, in[7]=false, out=isJMP);
+
+    Mux16(a[0..14]=pcOut, b=false, sel=reset, out=pcFeedbackIn);
+    Inc16(in=pcFeedbackIn, out=pcInc);
+
+    And(a=instruction[15], b=isJMP, out=shouldJMPLoad);
+    Mux16(a=pcInc, b=jmpAddressFromA, sel=shouldJMPLoad, out=pcIn);
+
+    Mux16(a=pcIn, b=false, sel=reset, out=finalPCaddress);
+    Register(in=finalPCaddress, load=true, out[0..14]=pcOut, out[0..14]=pc); // Program Counter
+    /****** PC Control END ******/
 }
