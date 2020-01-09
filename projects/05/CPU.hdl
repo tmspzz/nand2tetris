@@ -62,7 +62,7 @@ CHIP CPU {
 
     /****** A Register Control ******/
     Mux16(a=aluOutFeedback, b=instruction, sel=isAInstruction, out=inARegister);
-    Register(in=inARegister, load=loadA, out=outARegister, out=jmpAddressFromA, out[0..14]=addressM); // Register A
+    ARegister(in=inARegister, load=loadA, out=outARegister, out=jmpAddressFromA, out[0..14]=addressM); // Register A
     /****** A Register Control END ******/
 
     /****** ALU Input ******/
@@ -100,6 +100,6 @@ CHIP CPU {
     Mux16(a=pcInc, b=jmpAddressFromA, sel=shouldJMPLoad, out=pcIn);
 
     Mux16(a=pcIn, b=false, sel=reset, out=finalPCaddress);
-    Register(in=finalPCaddress, load=true, out[0..14]=pcOut, out[0..14]=pc); // Program Counter
+    PC(in=finalPCaddress, load=true, out[0..14]=pcOut, out[0..14]=pc); // Program Counter
     /****** PC Control END ******/
 }
